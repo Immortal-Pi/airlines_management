@@ -115,19 +115,15 @@ def insert_patient_record(db, name, age, contact_number, email, address):
     st.write("Patient record inserted successfully.")
 
 
-def fetch_all_patients(db):
-    """Fetch all records from the 'patients' table."""
+def fetch_all_flights(db):
+    """Fetch all records from the 'Flight_Schedule' table."""
     cursor = db.cursor()
 
-    # Select the database
-    cursor.execute("USE userdb")
-
-    # Fetch all patients
-    select_patients_query = "SELECT * FROM patients"
-    cursor.execute(select_patients_query)
-    patients = cursor.fetchall()
-
-    return patients
+    # Fetch all flights schedule
+    select_flight_query = "SELECT * FROM Flight_Schedule"
+    cursor.execute(select_flight_query)
+    flights = cursor.fetchall()
+    return flights
 
 
 def fetch_patient_by_id(db, patient_id):
@@ -490,26 +486,24 @@ def main():
                     cursor.execute(insert_query,(AcNumber,Capacity,MfdBy,MfdOn))
                     db.commit()
                     # Fetch the auto-generated AcID
-                    new_acid = cursor.lastrowid
-                    st.success(f"Aircraft record added successfully with AcID: {new_acid}, AcNumber: {AcNumber}")
+                    # new_acid = cursor.lastrowid
+                    st.success(f"Aircraft record added successfully with AcNumber: {AcNumber}")
                 except sqlite3.IntegrityError as e:
                     st.error(f"An error occurred: {e}")
                     
-            
+        
 
-
-         
-
-    elif options == "Show patiet Records":
-        patients = fetch_all_patients(db)
-        if patients:
-            st.subheader("All patients Records :magic_wand:")
-            df = pd.DataFrame(patients,
-                              columns=['ID', 'Name', 'Age', 'Contact Number', 'Email', 'Address', 'Date Added'])
+    elif options == "Show available flights":
+        flights = fetch_all_flights(db)
+        if flights:
+            st.subheader("All flight records :magic_wand:")
+            df = pd.DataFrame(flights,
+                              columns=['FlID','FlightDate','Departure','Arrival','Aircraft','NetFare'])
             st.dataframe(df)
         else:
-            st.write("No patients found")
-    elif options == "Search and Edit Patient":
+            st.write("No flights found")
+    
+    elif options == "Search and Edit flights":
         update_patient_record(db)
 
 
