@@ -1,12 +1,14 @@
 import streamlit as st
 import mysql.connector
+import sqlite3
+from datetime import datetime
 import pandas as pd
 import requests
 from streamlit_lottie import st_lottie
 
 config = {
     'user': 'root',
-    'password': 'Am$2141997$am',
+    'password': 'Helloworld@123',
     'host': 'localhost',
     'port': 3306,  # Update the port number to 3305 because in installation i gave port 3305
     'database': 'airlines'
@@ -23,7 +25,8 @@ def loti(url):
 
 def create_connection():
     """Create a connection to the MySQL database."""
-    db = mysql.connector.connect(**config)
+    #db = mysql.connector.connect(**config)
+    db=sqlite3.connect('setup/airlines.db')
     return db
 
 
@@ -419,14 +422,31 @@ def update_patient_info(db, patient_id, new_name, new_age, new_contact, new_emai
     db.commit()
     st.write("Patient record updated successfully.")
 
+def generate_acnumber(db):
+    cursor = db.cursor()
+    
+    # Query to get the maximum AcNumber
+    cursor.execute("SELECT AcNumber FROM Aircrafts ORDER BY AcNumber DESC LIMIT 1")
+    result = cursor.fetchone()
+    
+    if result is None:
+        # If there are no records, start from AC001
+        return "AC001"
+    else:
+        # Extract the numeric part of the AcNumber and increment it
+        last_acnumber = result[0]
+        numeric_part = int(last_acnumber[2:])  # Extract the number after "AC"
+        new_numeric_part = numeric_part + 1
+        return f"AC{new_numeric_part:03d}"  # Format with 3 digits, e.g., AC001, AC002
+
 
 def main():
     # Title and sidebar
     st.title("Airlines Management System :airplane_arriving:")
     lott1 = loti("https://lottie.host/b262eef4-f923-48e5-9df9-9654b245381d/yTaASJbbWr.json")
-    lotipatient = loti("https://assets6.lottiefiles.com/packages/lf20_vPnn3K.json")
+    lotipatient = loti("https://lottie.host/1e57917a-e376-49d2-a274-613899e76a96/OVc4BfQMSn.json")
     db = create_connection()
-
+    cursor = db.cursor()
     # create_database(db)
 
     # config['database'] = 'userdb'  # Update the database name
@@ -445,25 +465,40 @@ def main():
         st_lottie(lott1, height=800)
         # st.image('hospital.jpg', width=600)
 
-    elif options == "Add patient Record":
-        st.subheader("Enter patient details :woman_in_motorized_wheelchair:")
+    elif options == "Add Flights":
+        st.subheader("Enter Flight details 	:small_airplane::")
         st_lottie(lotipatient, height=200)
-        name = st.text_input("Enter name of patient", key="name")
-        age = st.number_input("Enter age of patient", key="age", value=1)
-        contact = st.text_input("Enter contact of patient", key="contact")
-        email = st.text_input("Enter Email of patient", key="email")
-        address = st.text_input("Enter Address of patient", key="address")
-        if st.button("add patient record"):
-            cursor = db.cursor()
-            select_query = """
-          SELECT * FROM patients WHERE contact_number=%s
-          """
-            cursor.execute(select_query, (contact,))
-            existing_patient = cursor.fetchone()
-            if existing_patient:
-                st.warning("A patient with the same contact number already exist")
+        # Automatically generate AcNumber
+        AcNumber = generate_acnumber(db)
+        st.text_input("Aircraft Number (Auto-Generated)", value=AcNumber, disabled=True)
+
+        #AcNumber = st.text_input("Enter aircraft number", key="AcNumber")
+        Capacity = st.number_input("Enter aircraft capacity", key="Capacity", value=150, min_value=5)
+        MfdBy = st.text_input("aircraft manufactored by", key="MfdBy")
+        MfdOn = st.text_input("Enter manufactored date(YYYY-MM-DD)", key="MfdOn")
+        
+        if st.button("add aircraft record"):
+            if not MfdBy or not MfdOn or not Capacity:
+                st.warning("Please fill all the fields.")
             else:
-                insert_patient_record(db, name, age, contact, email, address)
+                try:
+                    # Insert new aircraft record
+                    insert_query = """
+                    INSERT INTO Aircrafts (AcNumber, Capacity, MfdBy, MfdOn)
+                        VALUES (?, ?, ?, ?)
+                     """
+                    cursor.execute(insert_query,(AcNumber,Capacity,MfdBy,MfdOn))
+                    db.commit()
+                    # Fetch the auto-generated AcID
+                    new_acid = cursor.lastrowid
+                    st.success(f"Aircraft record added successfully with AcID: {new_acid}, AcNumber: {AcNumber}")
+                except sqlite3.IntegrityError as e:
+                    st.error(f"An error occurred: {e}")
+                    
+            
+
+
+         
 
     elif options == "Show patiet Records":
         patients = fetch_all_patients(db)
