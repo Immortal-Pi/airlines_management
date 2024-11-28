@@ -456,7 +456,7 @@ def main():
     # create_appointments_table(db)
     # modify_patients_table(db)
 
-    menu = ["Home", "Add Flights", "Show available flights", "Search and Edit flights", "Deetel Patients Record",
+    menu = ["Home", "Add Flights", "Show available flights", "Search and Edit flights", "delete flights",
             "Add patients Appointments", "Show All Appointments", "Search and Edit Patients Appointments"]
     options = st.sidebar.radio("Select an Option :dart:", menu)
     if options == "Home":
