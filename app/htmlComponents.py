@@ -81,7 +81,7 @@ edit_flights="""
  speed="100"
  frame_rate="24"
  trigger="loop"
- style="width:600px;background-color: ">
+ style="width:450px;background-color: ">
 </creattie-embed>
 <script src="https://creattie.com/js/embed.js?id=3f6954fde297cd31b441" defer></script>
 """

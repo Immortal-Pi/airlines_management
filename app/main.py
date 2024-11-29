@@ -8,14 +8,16 @@ from streamlit_lottie import st_lottie
 import streamlit as st
 import streamlit.components.v1 as components
 import htmlComponents
+from scheduleFlights import schedule_new_flights
 
-config = {
-    'user': 'root',
-    'password': 'Helloworld@123',
-    'host': 'localhost',
-    'port': 3306,  # Update the port number to 3305 because in installation i gave port 3305
-    'database': 'airlines'
-}
+# for my sql workbench
+# config = {
+#     'user': 'root',
+#     'password': 'Helloworld@123',
+#     'host': 'localhost',
+#     'port': 3306,  # Update the port number to 3305 because in installation i gave port 3305
+#     'database': 'airlines'
+# }
 
 
 def loti(url):
@@ -581,7 +583,7 @@ def book_flight_tickets(db):
     #AcNumber = st.text_input("Enter aircraft number", key="AcNumber")
     
     passenger_id = st.number_input("Enter passenger id",value=1)
-    flight_id = st.number_input("Enter Flight ID", key="FlID")
+    flight_id = st.number_input("Enter Flight ID", step=1)
     
     flight_type=1
     employee=st.number_input('employee ID', value=1)
@@ -613,6 +615,8 @@ def book_flight_tickets(db):
                 except sqlite3.IntegrityError as e:
                     st.error(f"An error occurred: {e}")
     
+    
+    
 
 
 
@@ -633,7 +637,7 @@ def main():
     # create_appointments_table(db)
     # modify_patients_table(db)
 
-    menu = ["Home", "Add Flights", "Show available flights", "book flights", "delete flights"]
+    menu = ["Home", "Add Flights/Schedule", "Show available flights", "book flights", "delete flights"]
     options = st.sidebar.radio("Select an Option :dart:", menu)
 
 
@@ -648,7 +652,7 @@ def main():
 
 
 
-    elif options == "Add Flights":
+    elif options == "Add Flights/Schedule":
         st.subheader("Enter Flight details 	:small_airplane::")
         st_lottie(lotipatient, height=200)
         # Automatically generate AcNumber
@@ -677,6 +681,9 @@ def main():
                     st.success(f"Aircraft record added successfully with AcNumber: {AcNumber}")
                 except sqlite3.IntegrityError as e:
                     st.error(f"An error occurred: {e}")
+
+        if st.button("Schedule Flights"):
+            schedule_new_flights(db)
                     
 
 
