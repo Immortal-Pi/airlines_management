@@ -5,6 +5,9 @@ from datetime import datetime
 import pandas as pd
 import requests
 from streamlit_lottie import st_lottie
+import streamlit as st
+import streamlit.components.v1 as components
+import htmlComponents
 
 config = {
     'user': 'root',
@@ -120,7 +123,7 @@ def fetch_all_flights(db):
     cursor = db.cursor()
 
     # Fetch all flights schedule
-    select_flight_query = "SELECT * FROM Flight_Schedule"
+    select_flight_query = "SELECT FlID,FlightDate,Departure,Arrival,Aircraft,Airport, Destination FROM Flight_Schedule f inner join AirFare a on f.NetFare=a.AfID inner join Route r on a.Route=r.RtID"
     cursor.execute(select_flight_query)
     flights = cursor.fetchall()
     return flights
@@ -356,46 +359,109 @@ def edit_appointment(db):
         st.write("Appointment record updated successfully.")
         del st.session_state.edit_appointment
 
+def filter_search_flights(db):
+    """Filter search flights with multiple options."""
+    st.subheader("Search Flights :airplane:")
 
-def update_patient_record(db):
-    """Update a patient's record in the 'patients' table."""
+    # Add multiple filter inputs
+    flight_id = st.text_input("Flight ID", key="flight_id")
+    flight_date = st.date_input("Flight Date", key="flight_date")
+    aircraft = st.text_input("Aircraft (AcNumber)", key="aircraft")
+    airport = st.text_input("Airport", key="airport")
 
-    search_option = st.selectbox("Select search option", ["ID", "Contact Number", "CNIS"], key="search_option")
-    search_value = st.text_input("Enter search value", key="search_value")
+    if st.button("Search Flights"):
+        # Build the query dynamically based on the filters provided
+        filters = []
+        params = []
 
-    if st.button("Search :magic_wand:"):
-        if search_option == "ID":
-            patient = fetch_patient_by_id(db, search_value)
-        elif search_option == "Contact Number":
-            patient = fetch_patient_by_contact(db, search_value)
-        elif search_option == "CNIS":
-            patient = fetch_patient_by_cnis(db, search_value)
+        if flight_id:
+            filters.append("FlID = ?")
+            params.append(flight_id)
+        if flight_date:
+            filters.append("DATE(FlightDate) = ?")
+            params.append(flight_date.strftime('%Y-%m-%d'))  # Convert date to string
+        if aircraft:
+            filters.append("Aircraft = ?")
+            params.append(aircraft)
+        if airport:
+            filters.append("Airport = ?")
+            params.append(airport)
 
-        if patient:
-            st.subheader("Patient Details")
-            df = pd.DataFrame([patient],
-                              columns=['ID', 'Name', 'Age', 'Contact Number', 'Email', 'Address', 'Date Added'])
-            st.dataframe(df)
-            st.session_state.edit_patient = patient
-        else:
-            st.write("Patient not found")
+        # If no filters are provided, show a message
+        if not filters:
+            st.warning("Please provide at least one search filter.")
+            return
 
-    if 'edit_patient' in st.session_state:
-        edit_patient(db)
+        # Construct the SQL query
+        query = """
+        SELECT FlID, FlightDate, Departure, Arrival, Aircraft, Airport, Destination
+        FROM Flight_Schedule f
+        INNER JOIN AirFare a ON f.NetFare = a.AfID
+        INNER JOIN Route r ON a.Route = r.RtID
+        """
+        if filters:
+            query += " WHERE " + " AND ".join(filters)
+
+        # Execute the query
+        cursor = db.cursor()
+        cursor.execute(query, tuple(params))
+        flights = cursor.fetchall()
+
+        return flights
+        # # Display results
+        # if flights:
+        #     st.subheader("Search Results")
+        #     df = pd.DataFrame(flights, columns=['Flight ID', 'Flight Date', 'Departure', 'Arrival', 'Aircraft', 'Airport', 'Destination'])
+        #     st.dataframe(df)
+        #     st.session_state.edit_flights = flights
+        #     st.text(flights)
+        # else:
+        #     st.write("No flights found matching the criteria.")
+        
+
+        
 
 
-def edit_patient(db):
-    """Edit a patient's record in the 'patients' table."""
 
-    st.subheader("Edit Patient Details")
-    new_name = st.text_input("Enter new name", value=st.session_state.edit_patient[1])
-    new_age = st.number_input("Enter new age", value=st.session_state.edit_patient[2])
-    new_contact = st.text_input("Enter new contact number", value=st.session_state.edit_patient[3])
-    new_email = st.text_input("Enter new email", value=st.session_state.edit_patient[4])
-    new_address = st.text_input("Enter new address", value=st.session_state.edit_patient[5])
+# def update_airlines_record(db):
+#     """Update a patient's record in the 'patients' table."""
+
+#     search_option = st.selectbox("Select search option", ["ID", "Contact Number", "CNIS"], key="search_option")
+#     search_value = st.text_input("Enter search value", key="search_value")
+
+#     if st.button("Search :magic_wand:"):
+#         if search_option == "ID":
+#             patient = fetch_patient_by_id(db, search_value)
+#         elif search_option == "Contact Number":
+#             patient = fetch_patient_by_contact(db, search_value)
+#         elif search_option == "CNIS":
+#             patient = fetch_patient_by_cnis(db, search_value)
+
+#         if patient:
+#             st.subheader("Patient Details")
+#             df = pd.DataFrame([patient],
+#                               columns=['ID', 'Name', 'Age', 'Contact Number', 'Email', 'Address', 'Date Added'])
+#             st.dataframe(df)
+#             st.session_state.edit_patient = patient
+#         else:
+#             st.write("Patient not found")
+
+#     if 'edit_patient' in st.session_state:
+#         edit_patient(db)
+
+
+def edit_flights(db):
+    """Edit a flights record in the 'flight schedule' table."""
+
+    st.subheader("Edit flights Details")
+    new_name = st.text_input("Enter new flight date", value=st.session_state.edit_flights[1])
+    new_age = st.number_input("Enter new departute time", value=st.session_state.edit_flights[2])
+    new_contact = st.text_input("Enter new arrival time", value=st.session_state.edit_flights[3])
+    new_email = st.text_input("Enter new aircraft", value=st.session_state.edit_flights[4])
+    new_address = st.text_input("Enter new destination", value=st.session_state.edit_flights[5])
 
     if st.button("Update :roller_coaster:"):
-        patient_id = st.session_state.edit_patient[0]
+        patient_id = st.session_state.edit_flights[0]
         update_patient_info(db, patient_id, new_name, new_age, new_contact, new_email, new_address)
 
 
@@ -435,6 +501,121 @@ def generate_acnumber(db):
         new_numeric_part = numeric_part + 1
         return f"AC{new_numeric_part:03d}"  # Format with 3 digits, e.g., AC001, AC002
 
+def generate_transactionID(db):
+    cursor = db.cursor()
+    cursor.execute("SELECT TsID FROM Transactions ORDER BY TsID DESC LIMIT 1")
+    result = cursor.fetchone()
+    
+    if result is None:
+        # If there are no records, start from AC001
+        return 1
+    else:
+        # Extract the numeric part of the AcNumber and increment it
+        return result[0]+1
+
+
+def book_flights(db):
+    cursor=db.cursor()
+    st.subheader("Search Flights by date :airplane:")
+
+    # Add multiple filter inputs
+    flight_date = st.date_input("Flight Date", key="flight_date")
+    from_location = st.text_input("from", key="from")
+    to_location = st.text_input("to", key="to")
+
+    if st.button("Search Flights"):
+        # Build the query dynamically based on the filters provided
+        filters = []
+        params = []
+
+        if flight_date:
+            filters.append("DATE(FlightDate) = ?")
+            params.append(flight_date.strftime('%Y-%m-%d'))  # Convert date to string
+        if from_location:
+            filters.append("Airport = ?")
+            params.append(from_location)
+        if to_location:
+            filters.append("Destination = ?")
+            params.append(to_location)
+
+        # If no filters are provided, show a message
+        if not filters:
+            st.warning("Please provide at least one search filter.")
+            return
+
+        # Construct the SQL query
+        query = """
+        SELECT FlID, FlightDate, Departure, Arrival, Aircraft, Airport, Destination
+        FROM Flight_Schedule f
+        INNER JOIN AirFare a ON f.NetFare = a.AfID
+        INNER JOIN Route r ON a.Route = r.RtID
+        """
+        if filters:
+            query += " WHERE " + " AND ".join(filters)
+
+        # Execute the query
+        cursor = db.cursor()
+        cursor.execute(query, tuple(params))
+        flights = cursor.fetchall()
+        st.session_state.flights=flights
+        return flights
+        
+        
+
+
+def book_flight_tickets(db):
+    cursor=db.cursor()
+    
+    st.subheader('Enter booking details')
+    components.html(htmlComponents.book_flights, height=400)
+    #passengerid
+    #booking date - today
+    #flightid
+    #type
+    #employee -who booked the flight
+    #charges
+    #discount
+    TsID = generate_transactionID(db)
+    st.text_input("Booking ID (Auto-Generated)", value=TsID, disabled=True)
+    
+    #AcNumber = st.text_input("Enter aircraft number", key="AcNumber")
+    
+    passenger_id = st.number_input("Enter passenger id",value=1)
+    flight_id = st.number_input("Enter Flight ID", key="FlID")
+    
+    flight_type=1
+    employee=st.number_input('employee ID', value=1)
+    charge_id=st.number_input('charge_id', value=20)
+    discount=st.number_input('discount_id', value=15)
+    
+    if st.button("book ticket"):
+            if not passenger_id or not flight_id :
+                st.warning("Please fill all the necessary fields.")
+            else:
+                try:
+                    # Insert new aircraft record
+                    BookingDate=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    DepartureDate=datetime.now().strftime('%Y-%m-%d %H:%M:%S')
+                    for flight in st.session_state['flights']:
+                        if flight[0] == flight_id:  # Assuming index 0 is FlID
+                            DepartureDate = flight[2]  # Assuming index 1 is BookingDate
+                            
+                    insert_query = """
+                    INSERT INTO Transactions (TsID, BookingDate, DepartureDate, Passenger,Flight,Type,Employee,Charges, Discount)
+                        VALUES (?, ?, ?, ?,?,?,?,?,?)
+                     """
+                    #st.write(TsID,BookingDate,DepartureDate,passenger_id,flight_id,flight_type,employee,charge_id,discount)
+                    cursor.execute(insert_query,(TsID,BookingDate,DepartureDate,passenger_id,flight_id,flight_type,employee,charge_id,discount))
+                    db.commit()
+                    # Fetch the auto-generated AcID
+                    # new_acid = cursor.lastrowid
+                    st.success(f"Successfully booked the ticket. booking confirmation ID: {TsID}")
+                except sqlite3.IntegrityError as e:
+                    st.error(f"An error occurred: {e}")
+    
+
+
+
 
 def main():
     # Title and sidebar
@@ -452,14 +633,20 @@ def main():
     # create_appointments_table(db)
     # modify_patients_table(db)
 
-    menu = ["Home", "Add Flights", "Show available flights", "Search and Edit flights", "delete flights",
-            "Add patients Appointments", "Show All Appointments", "Search and Edit Patients Appointments"]
+    menu = ["Home", "Add Flights", "Show available flights", "book flights", "delete flights"]
     options = st.sidebar.radio("Select an Option :dart:", menu)
+
+
+
     if options == "Home":
         st.subheader("Welcome to Airlines Management System:")
         st.write("Navigate from sidebar to access flight details and booking")
         st_lottie(lott1, height=800)
         # st.image('hospital.jpg', width=600)
+
+
+
+
 
     elif options == "Add Flights":
         st.subheader("Enter Flight details 	:small_airplane::")
@@ -491,20 +678,41 @@ def main():
                 except sqlite3.IntegrityError as e:
                     st.error(f"An error occurred: {e}")
                     
-        
+
+
 
     elif options == "Show available flights":
-        flights = fetch_all_flights(db)
+        #flights = fetch_all_flights(db)
+        flights = filter_search_flights(db)
         if flights:
-            st.subheader("All flight records :magic_wand:")
+            st.subheader("All available flights :magic_wand:")
             df = pd.DataFrame(flights,
-                              columns=['FlID','FlightDate','Departure','Arrival','Aircraft','NetFare'])
+                              columns=['FlID','FlightDate','Departure','Arrival','Aircraft','Airport', 'Destination'])
             st.dataframe(df)
         else:
             st.write("No flights found")
+        
+        
+
     
-    elif options == "Search and Edit flights":
-        update_patient_record(db)
+    elif options == "book flights":
+        flights=book_flights(db)
+        if flights:
+            st.subheader("All available flights :magic_wand:")
+            df = pd.DataFrame(flights,
+                              columns=['FlID','FlightDate','Departure','Arrival','Aircraft','Airport', 'Destination'])
+            st.dataframe(df)
+            st.session_state.book_flights=flights
+        else:
+            st.write("No flights found")
+        if 'book_flights' in st.session_state:
+            book_flight_tickets(db)
+
+
+
+
+
+
 
 
     elif options == "Deetel Patients Record":
