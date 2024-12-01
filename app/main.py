@@ -35,76 +35,6 @@ def create_connection():
     db=sqlite3.connect('setup/airlines.db')
     return db
 
-
-def create_database(db):
-    """Create the 'userdb' database if it doesn't exist."""
-    cursor = db.cursor()
-    cursor.execute("CREATE DATABASE IF NOT EXISTS userdb")
-    cursor.close()
-
-
-def create_patients_table(db):
-    """Create the patients table in the database."""
-    cursor = db.cursor()
-
-    create_patients_table_query = """
-    CREATE TABLE IF NOT EXISTS patients (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        name VARCHAR(255) NOT NULL,
-        age INT,
-        contact_number VARCHAR,
-        address VARCHAR(255),
-        date_added TIMESTAMP DEFAULT CURRENT_TIMESTAMPCHAR(20),
-        email VARCHAR(255),
-    )
-    """
-
-    cursor.execute(create_patients_table_query)
-    db.commit()
-    st.write("Patients table created successfully.")
-
-
-def modify_patients_table(db):
-    cursor = db.cursor()
-
-    alter_table_query = """
-    ALTER TABLE patients
-    ADD COLUMN doctor_name VARCHAR(255),
-    ADD COLUMN disease VARCHAR(255),
-    ADD COLUMN fee INTEGER(5),
-    ADD COLUMN tests VARCHAR(255),
-    ADD COLUMN cnic VARCHAR(20)
-    """
-
-    cursor.execute(alter_table_query)
-    db.commit()
-    st.write("Patients table modified successfully.")
-
-
-def create_appointments_table(db):
-    """Create the appointments table in the database."""
-    cursor = db.cursor()
-
-    create_appointments_table_query = """
-    CREATE TABLE IF NOT EXISTS appointments (
-        id INT AUTO_INCREMENT PRIMARY KEY,
-        patient_id INT,
-        appointment_date DATE,
-        appointment_time TIME,
-        doctor_name VARCHAR(255),
-        notes TEXT,
-        FOREIGN KEY (patient_id) REFERENCES patients(id)
-    )
-    """
-
-    cursor.execute(create_appointments_table_query)
-    db.commit()
-    st.write("Appointments table created successfully.")
-
-
-
-
-
 def fetch_all_flights(db):
     """Fetch all records from the 'Flight_Schedule' table."""
     cursor = db.cursor()
@@ -134,10 +64,10 @@ def edit_booking_record(db, TsID, new_passenger_id,new_flight_id,new_charges,new
         # Update the booking record
         update_booking_query = """
         UPDATE Transactions
-        SET passenger = ?, Flight = ?, Charges=?, Discount=?
+        SET passenger = ?, Flight = ?, Charges=?, Discount=?, Type=?
         WHERE TsID = ?
         """
-        booking_data = (new_passenger_id,new_flight_id,new_charges,new_discount,TsID)
+        booking_data = (new_passenger_id,new_flight_id,new_charges,new_discount,1,TsID)
 
         cursor.execute(update_booking_query, booking_data)
         db.commit()
@@ -152,9 +82,9 @@ def fetch_booking_by_id(db, booking_id):
     select_booking_query = """
        SELECT TsID, BookingDate, DepartureDate, Passenger, Flight, Charges, Discount
         FROM Transactions
-       WHERE TsID = ?
+       WHERE TsID = ? and Type=?
        """
-    cursor.execute(select_booking_query, (booking_id,))
+    cursor.execute(select_booking_query, (booking_id,1))
     booking = cursor.fetchone()
     #st.write(booking)
     return booking
