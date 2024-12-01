@@ -134,6 +134,19 @@ book_flights_2="""
 <script src="https://creattie.com/js/embed.js?id=3f6954fde297cd31b441" defer></script>
 
 """
+
+system_logs=""" 
+<creattie-embed
+ src="https://d1jj76g3lut4fe.cloudfront.net/saved_colors/106803/ya7PgnjtNDIL82D1.json"
+ delay="1"
+ speed="100"
+ frame_rate="24"
+ trigger="loop"
+ style="width:600px;background-color: ">
+</creattie-embed>
+<script src="https://creattie.com/js/embed.js?id=3f6954fde297cd31b441" defer></script>
+
+"""
 # Display the animation
 # st.title("Creattie Animation in Streamlit")
 # components.html(customer_support, height=400)

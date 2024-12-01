@@ -105,6 +105,7 @@ def manage_booking(db):
             st.subheader("Appointment Details")
             df = pd.DataFrame([booking],
                               columns=['TsID', 'BookingDate', 'DepartureDate', 'Passenger', 'Flight', 'Charges', 'Discount'])
+            df.set_index('TsID',inplace=True)
             st.dataframe(df)
             st.session_state.edit_booking = booking
         else:
@@ -125,12 +126,12 @@ def edit_booking(db):
     with col1:
         if st.button("Update booking"):
                 edit_booking_record(db, booking[0], new_passenger_id,new_flight,new_charges,new_discount)
-                st.write(f"booking id: {booking[0]} updated successfully.")
+                st.success(f"booking id: {booking[0]} updated successfully.")
                 
     with col3:
         if st.button("cancel booking"):
                 edit_booking_record(db, booking[0], new_passenger_id,new_flight,new_charges,new_discount,True)
-                st.write(f"booking id: {booking[0]} cancelled successfully.")
+                st.success(f"booking id: {booking[0]} cancelled successfully.")
                 
     #del st.session_state.edit_booking
 
@@ -237,11 +238,11 @@ def book_flights(db):
             filters.append("DATE(FlightDate) = ?")
             params.append(flight_date.strftime('%Y-%m-%d'))  # Convert date to string
         if from_location:
-            filters.append("Airport = ?")
-            params.append(from_location)
+            filters.append("Airport like ?")
+            params.append(f'%{from_location}%')
         if to_location:
-            filters.append("Destination = ?")
-            params.append(to_location)
+            filters.append("Destination like ?")
+            params.append(f'%{to_location}%')
 
         # If no filters are provided, show a message
         if not filters:
@@ -318,7 +319,22 @@ def book_flight_tickets(db):
                 except sqlite3.IntegrityError as e:
                     st.error(f"An error occurred: {e}")
     
-    
+def system_logs(db):
+    cursor=db.cursor()
+    #operation=st.text_input('Operation(INSERT/DELETE/UPDATE)')
+    search=st.text_input('Search logs')
+    if st.button('Search'):
+        search_query=""" 
+        select * from logs where DATA like ?
+        """
+        cursor.execute(search_query, (f'%{search}%',))
+        results=cursor.fetchall()
+        column_names = ['LogID', 'OPERATION', 'LogTimeStamp', 'DATA']
+        pd1=pd.DataFrame(results,columns=column_names)
+        pd1.set_index('LogID', inplace=True)
+        st.table(pd1)
+
+
     
 
 
@@ -341,20 +357,14 @@ def main():
     # create_appointments_table(db)
     # modify_patients_table(db)
 
-    menu = ["Home", "Add Flights/Schedule", "Show available flights","manage passenger", "book flights", "manage bookings"]
+    menu = ["Home", "Add Flights/Schedule","Manage Passenger", "Show Available Flights","Book Flights", "Manage Bookings","System Logs"]
     options = st.sidebar.radio("Select an Option :dart:", menu)
-
-
 
     if options == "Home":
         #st.subheader("Welcome to Airlines Management System:")
         st.write("Navigate from sidebar to access flight details/booking and passenger details")
         st_lottie(lott1, height=800)
         # st.image('hospital.jpg', width=600)
-
-
-
-
 
     elif options == "Add Flights/Schedule":
         st.subheader("Enter Flight details 	:small_airplane::")
@@ -391,11 +401,8 @@ def main():
         with col3:
             if st.button("Schedule Flights"):
                 schedule_new_flights(db)
-                    
-
-
-
-    elif options == "Show available flights":
+ 
+    elif options == "Show Available Flights":
         #flights = fetch_all_flights(db)
         st_lottie(book_flights_logo,height=300)
         flights = filter_search_flights(db)
@@ -403,51 +410,39 @@ def main():
             st.subheader("All available flights :magic_wand:")
             df = pd.DataFrame(flights,
                               columns=['FlID','FlightDate','Departure','Arrival','Aircraft','Airport', 'Destination'])
+            df.set_index('FlID',inplace=True)
             st.dataframe(df)
+
         else:
             st.write("No flights found")
-        
-        
-
     
-    elif options == "book flights":
+    elif options == "Book Flights":
         flights=book_flights(db)
         if flights:
             st.subheader("All available flights :magic_wand:")
             df = pd.DataFrame(flights,
                               columns=['FlID','FlightDate','Departure','Arrival','Aircraft','Airport', 'Destination'])
+            
+            df.set_index('FlID',inplace=True)
             st.dataframe(df)
             st.session_state.book_flights=flights
         else:
-            st.write("No flights found")
+            st.error("No flights found")
         if 'book_flights' in st.session_state:
             book_flight_tickets(db)
 
-
-
-
-
-
-
-
-    elif options == "manage bookings":
+    elif options == "Manage Bookings":
         manage_booking(db)
-        #flights=filter_search_bookings(db)
-        # delete_option = st.selectbox("Select delete option", ["ID", "Name", "Contact Number"], key="delete_option")
-        # delete_value = st.text_input("Enter delete value", key="delete_value")
 
-        # if st.button("Delete"):
-        #     delete_patient_record(db, delete_option, delete_value)
-
-    elif options == "manage passenger":
+    elif options == "Manage Passenger":
         st.subheader('Manage Passengers')
         st.image('./assets/passengers.png',width=600)
         manage_passengers(db)
 
-    elif options == "Show All Appointments":
-        manage_passengers(db)
-
-
+    elif options == "System Logs":
+        st.subheader('Search logs')
+        components.html(htmlComponents.system_logs, height=400)
+        system_logs(db)
     
 
     db.close()

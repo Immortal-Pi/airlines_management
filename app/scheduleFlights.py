@@ -40,7 +40,7 @@ def schedule_new_flights(db):
                     db.commit()
                     # Fetch the auto-generated AcID
                     # new_acid = cursor.lastrowid
-                    st.success(f"Successfully booked the ticket. booking confirmation ID: {flight_id}")
+                    st.success(f"Successfully scheduled the flight {aircraft_id}, confirmation ID: {flight_id}")
                 except sqlite3.IntegrityError as e:
                     st.error(f"An error occurred: {e}")
 

@@ -34,12 +34,12 @@ def edit_passenger(db):
     with col1:
         if st.button("Update passenger"):
                 edit_passenger_record(db, passenger[0],new_name,new_address,new_nationality,new_contact)
-                st.write(f"passenger id: {passenger[0]}: {passenger[1]} updated successfully.")
+                st.success(f"passenger : {passenger[1]} with ID {passenger[0]} updated successfully.")
                 
     with col3:
         if st.button("delete passenger"):
                 edit_passenger_record(db, passenger[0],new_name,new_address,new_nationality,new_contact,True)
-                st.write(f"passenger id: {passenger[0]}: {passenger[1]} deleted successfully.")
+                st.success(f"passenger : {passenger[1]} with ID {passenger[0]} deleted successfully.")
                 del st.session_state.edit_passenger
                 
 
