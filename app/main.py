@@ -1,5 +1,5 @@
 import streamlit as st
-import mysql.connector
+#import mysql.connector
 import sqlite3
 from datetime import datetime
 import pandas as pd
@@ -9,6 +9,7 @@ import streamlit as st
 import streamlit.components.v1 as components
 import htmlComponents
 from scheduleFlights import schedule_new_flights
+from manage_booking import filter_search_bookings
 
 # for my sql workbench
 # config = {
@@ -255,111 +256,74 @@ def show_all_appointments(db):
         st.write("No appointments found")
 
 
-def edit_appointment_record(db, appointment_id, new_appointment_date, new_appointment_time, new_doctor_name, new_notes):
-    """Edit an appointment record in the 'appointments' table."""
+def edit_booking_record(db, TsID, new_passenger_id,new_flight_id):
+    """Edit an booking record in the 'appointments' table."""
     cursor = db.cursor()
 
-    # Select the database
-    cursor.execute("USE userdb")
-
-    # Update the appointment record
-    update_appointment_query = """
-    UPDATE appointments
-    SET appointment_date = %s, appointment_time = CAST(%s AS TIME), doctor_name = %s, notes = %s
-    WHERE id = %s
+   
+    # Update the booking record
+    update_booking_query = """
+    UPDATE Transactions
+    SET passenger = ?, Flight = ?
+    WHERE TsID = ?
     """
-    appointment_data = (new_appointment_date, new_appointment_time, new_doctor_name, new_notes, appointment_id)
+    booking_data = (new_passenger_id,new_flight_id,TsID)
 
-    cursor.execute(update_appointment_query, appointment_data)
+    cursor.execute(update_booking_query, booking_data)
     db.commit()
 
 
-def fetch_appointment_by_id(db, appointment_id):
+def fetch_booking_by_id(db, booking_id):
     """Fetch an appointment's record from the 'appointments' table based on ID."""
     cursor = db.cursor()
 
-    # Select the database
-    cursor.execute("USE userdb")
 
     # Fetch the appointment by ID
-    select_appointment_query = """
-       SELECT id, patient_id, appointment_date, CAST(appointment_time AS CHAR), doctor_name, notes
-       FROM appointments
-       WHERE id = %s
+    select_booking_query = """
+       SELECT TsID, BookingDate, DepartureDate, Passenger, Flight, Charges, Discount
+        FROM Transactions
+       WHERE TsID = ?
        """
-    cursor.execute(select_appointment_query, (appointment_id,))
-    appointment = cursor.fetchone()
-
-    return appointment
-
-
-def fetch_appointment_by_patient_id(db, patient_id):
-    query = """
-    SELECT id, patient_id, appointment_date, CAST(appointment_time AS CHAR), doctor_name, notes
-    FROM appointments
-    WHERE patient_id = %s
-    """
-    cursor = db.cursor()
-    cursor.execute("USE userdb")
-    cursor.execute(query, (patient_id,))
-    appointment = cursor.fetchone()
-    # cursor.close()
-    return appointment
+    cursor.execute(select_booking_query, (booking_id,))
+    booking = cursor.fetchone()
+    #st.write(booking)
+    return booking
 
 
-def fetch_appointment_by_doctor_name(db, doctor_name):
-    query = """
-    SELECT id, patient_id, appointment_date, CAST(appointment_time AS CHAR), doctor_name, notes
-    FROM appointments
-    WHERE doctor_name = %s
-    """
-    cursor = db.cursor()
-    cursor.execute("USE userdb")
-    cursor.execute(query, (doctor_name,))
-    appointment = cursor.fetchone()
-    # cursor.close()
-    return appointment
 
 
-def search_appointment(db):
-    search_option = st.selectbox("Select search option", ["ID", "Patient ID", "Doctor Name"], key="search_option")
-    search_value = st.text_input("Enter search value", key="search_value")
+
+def manage_booking(db):
+    
+    search_value = st.text_input("Enter Booking ID", key="search_value")
 
     if st.button("Search"):
-        if search_option == "ID":
-            appointment = fetch_appointment_by_id(db, search_value)
-        elif search_option == "Patient ID":
-            appointment = fetch_appointment_by_patient_id(db, search_value)
-        elif search_option == "Doctor Name":
-            appointment = fetch_appointment_by_doctor_name(db, search_value)
+        booking = fetch_booking_by_id(db, search_value)
+        
 
-        if appointment:
+        if booking:
             st.subheader("Appointment Details")
-            df = pd.DataFrame([appointment],
-                              columns=['ID', 'Patient ID', 'Appointment Date', 'Appointment Time', 'Doctor Name',
-                                       'Notes'])
+            df = pd.DataFrame([booking],
+                              columns=['TsID', 'BookingDate', 'DepartureDate', 'Passenger', 'Flight', 'Charges', 'Discount'])
             st.dataframe(df)
-            st.session_state.edit_appointment = appointment
+            st.session_state.edit_booking = booking
         else:
-            st.write("Appointment not found")
-    if 'edit_appointment' in st.session_state:
-        edit_appointment(db)
+            st.write("booking not found")
+    if 'edit_booking' in st.session_state:
+        edit_booking(db)
 
 
-def edit_appointment(db):
+def edit_booking(db):
     # if 'edit_appointment' in st.session_state:
-    appointment = st.session_state.edit_appointment
-    st.subheader("Edit Appointment Details")
-    new_appointment_date = st.date_input("Appointment Date", value=appointment[2])
-    new_appointment_time = st.text_input("Appointment Time", value=appointment[3])
-    new_doctor_name = st.text_input("Doctor Name", value=appointment[4])
-    new_notes = st.text_input("Notes", value=appointment[5])
+    booking = st.session_state.edit_booking
+    st.subheader("Edit booking Details")
+    new_passenger_id = st.number_input("passenger id", value=booking[3])
+    new_flight = st.text_input("flight id", value=booking[4])
 
-    if st.button("Update Appointment"):
-        edit_appointment_record(db, appointment[0], new_appointment_date, new_appointment_time, new_doctor_name,
-                                new_notes)
-        st.write("Appointment record updated successfully.")
-        del st.session_state.edit_appointment
+    if st.button("Update booking"):
+        edit_booking_record(db, booking[0], new_passenger_id,new_flight)
+        st.write("booking record updated successfully.")
+        del st.session_state.edit_booking
 
 def filter_search_flights(db):
     """Filter search flights with multiple options."""
@@ -410,46 +374,7 @@ def filter_search_flights(db):
         flights = cursor.fetchall()
 
         return flights
-        # # Display results
-        # if flights:
-        #     st.subheader("Search Results")
-        #     df = pd.DataFrame(flights, columns=['Flight ID', 'Flight Date', 'Departure', 'Arrival', 'Aircraft', 'Airport', 'Destination'])
-        #     st.dataframe(df)
-        #     st.session_state.edit_flights = flights
-        #     st.text(flights)
-        # else:
-        #     st.write("No flights found matching the criteria.")
-        
-
-        
-
-
-
-# def update_airlines_record(db):
-#     """Update a patient's record in the 'patients' table."""
-
-#     search_option = st.selectbox("Select search option", ["ID", "Contact Number", "CNIS"], key="search_option")
-#     search_value = st.text_input("Enter search value", key="search_value")
-
-#     if st.button("Search :magic_wand:"):
-#         if search_option == "ID":
-#             patient = fetch_patient_by_id(db, search_value)
-#         elif search_option == "Contact Number":
-#             patient = fetch_patient_by_contact(db, search_value)
-#         elif search_option == "CNIS":
-#             patient = fetch_patient_by_cnis(db, search_value)
-
-#         if patient:
-#             st.subheader("Patient Details")
-#             df = pd.DataFrame([patient],
-#                               columns=['ID', 'Name', 'Age', 'Contact Number', 'Email', 'Address', 'Date Added'])
-#             st.dataframe(df)
-#             st.session_state.edit_patient = patient
-#         else:
-#             st.write("Patient not found")
-
-#     if 'edit_patient' in st.session_state:
-#         edit_patient(db)
+     
 
 
 def edit_flights(db):
@@ -637,7 +562,7 @@ def main():
     # create_appointments_table(db)
     # modify_patients_table(db)
 
-    menu = ["Home", "Add Flights/Schedule", "Show available flights", "book flights", "delete flights"]
+    menu = ["Home", "Add Flights/Schedule", "Show available flights", "book flights", "manage bookings"]
     options = st.sidebar.radio("Select an Option :dart:", menu)
 
 
@@ -664,26 +589,28 @@ def main():
         MfdBy = st.text_input("aircraft manufactored by", key="MfdBy")
         MfdOn = st.text_input("Enter manufactored date(YYYY-MM-DD)", key="MfdOn")
         
-        if st.button("add aircraft record"):
-            if not MfdBy or not MfdOn or not Capacity:
-                st.warning("Please fill all the fields.")
-            else:
-                try:
-                    # Insert new aircraft record
-                    insert_query = """
-                    INSERT INTO Aircrafts (AcNumber, Capacity, MfdBy, MfdOn)
-                        VALUES (?, ?, ?, ?)
-                     """
-                    cursor.execute(insert_query,(AcNumber,Capacity,MfdBy,MfdOn))
-                    db.commit()
-                    # Fetch the auto-generated AcID
-                    # new_acid = cursor.lastrowid
-                    st.success(f"Aircraft record added successfully with AcNumber: {AcNumber}")
-                except sqlite3.IntegrityError as e:
-                    st.error(f"An error occurred: {e}")
-
-        if st.button("Schedule Flights"):
-            schedule_new_flights(db)
+        col1, col2,col3 =st.columns([1,3,1])
+        with col1:
+            if st.button("add aircraft record"):
+                if not MfdBy or not MfdOn or not Capacity:
+                    st.warning("Please fill all the fields.")
+                else:
+                    try:
+                        # Insert new aircraft record
+                        insert_query = """
+                        INSERT INTO Aircrafts (AcNumber, Capacity, MfdBy, MfdOn)
+                            VALUES (?, ?, ?, ?)
+                        """
+                        cursor.execute(insert_query,(AcNumber,Capacity,MfdBy,MfdOn))
+                        db.commit()
+                        # Fetch the auto-generated AcID
+                        # new_acid = cursor.lastrowid
+                        st.success(f"Aircraft record added successfully with AcNumber: {AcNumber}")
+                    except sqlite3.IntegrityError as e:
+                        st.error(f"An error occurred: {e}")
+        with col3:
+            if st.button("Schedule Flights"):
+                schedule_new_flights(db)
                     
 
 
@@ -722,13 +649,14 @@ def main():
 
 
 
-    elif options == "Deetel Patients Record":
-        st.subheader("Search a patient to delate :skull_and_crossbones:")
-        delete_option = st.selectbox("Select delete option", ["ID", "Name", "Contact Number"], key="delete_option")
-        delete_value = st.text_input("Enter delete value", key="delete_value")
+    elif options == "manage bookings":
+        manage_booking(db)
+        flights=filter_search_bookings(db)
+        # delete_option = st.selectbox("Select delete option", ["ID", "Name", "Contact Number"], key="delete_option")
+        # delete_value = st.text_input("Enter delete value", key="delete_value")
 
-        if st.button("Delete"):
-            delete_patient_record(db, delete_option, delete_value)
+        # if st.button("Delete"):
+        #     delete_patient_record(db, delete_option, delete_value)
 
     elif options == "Add patients Appointments":
         patient_id = st.number_input("Enter patient ID:", key="appointment_patient_id")
