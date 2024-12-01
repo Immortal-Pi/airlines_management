@@ -1,0 +1,5 @@
+streamlit=1.30.0streamlit==1.40.0
+streamlit-lottie==0.0.5
+aiosqlite==0.20.0
+streamlit-lottie==0.0.5
+html2text==2024.2.26
