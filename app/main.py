@@ -11,6 +11,7 @@ import htmlComponents
 from scheduleFlights import schedule_new_flights
 from manage_booking import filter_search_bookings
 from manage_passengers import manage_passengers
+
 # for my sql workbench
 # config = {
 #     'user': 'root',
