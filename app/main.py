@@ -384,7 +384,7 @@ def _discounts(cl):
         #updatediscounts=json.loads(query,update)
         #cl.update_one(updatediscounts)  # update
 
-        st.success("Document Updated successfully!")
+        #st.success("Document Updated successfully!")
 
     if st.button('Delete Discounts'):
         #deletediscounts=json.loads(deletediscounts)
