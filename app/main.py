@@ -11,6 +11,9 @@ import htmlComponents
 from scheduleFlights import schedule_new_flights
 from manage_booking import filter_search_bookings
 from manage_passengers import manage_passengers
+import pymongo
+from pymongo.mongo_client import MongoClient
+import json
 
 # for my sql workbench
 # config = {
@@ -336,13 +339,82 @@ def system_logs(db):
         st.table(pd1)
 
 
+def _discounts(cl):
+    #operation=st.text_input('Operation(INSERT/DELETE/UPDATE)')
+    creatediscounts=st.text_input('Create Discounts')
+    viewdiscounts=st.text_input('View Discounts')
+    updatediscounts=st.text_input('Update Discounts')
+    deletediscounts=st.text_input('Delete Discounts')
+
+    if st.button('Create Discounts'):
+        print(creatediscounts, type(creatediscounts))
+        discount = json.loads(creatediscounts)
+        #print(discount)  # v.s.print("user")
+        print("\n")
+        # insert one document
+        inserted_record = cl.insert_one(discount)
+        print(f"Inserted record ID: {inserted_record.inserted_id}")
+
+        #column_names = ['LogID', 'OPERATION', 'LogTimeStamp', 'DATA']
+        #pd1=pd.DataFrame(inserted_record,columns=column_names)
+        #pd1.set_index('LogID', inplace=True)
+        st.success("Document inserted successfully!")
+
+    if st.button('View Discounts'):
+        viewdiscounts = json.loads(viewdiscounts)
+        v=cl.find_one(viewdiscounts)  # Read
+
+        st.success(v)
+
+    if st.button('Update Discounts'):
+        print("updated discounts",updatediscounts, "type",type(updatediscounts))
+        updatediscounts = updatediscounts.split(",")
+        print("query:", updatediscounts[0])
+        print("update:", updatediscounts[1])
+
+        query = json.loads(updatediscounts[0])
+        update = json.loads(updatediscounts[1])
+
+
+        # Perform the update operation
+        #cl.update_one(query, update)
+        #updatediscounts=json.loads(query,update)
+        #cl.update_one(updatediscounts)  # update
+
+        st.success("Document Updated successfully!")
+
+    if st.button('Delete Discounts'):
+        deletediscounts=json.loads(deletediscounts)
+        deleted_result = cl.delete_one(deletediscounts)
+        print(deleted_result.deleted_count)  # delete
+
+        st.success("Document Deleted successfully!")
     
+def create_mongodb_connection():
+    """Create a connection to the MongoDB database."""
+    uri = "mongodb+srv://svb200000:dh3HxayJ4ijxcO6P@cluster0.mivp3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+
+    # Create a new client and connect to the server
+    client = MongoClient(uri)
+
+    # Send a ping to confirm a successful connection
+    try:
+        client.admin.command('ping')
+        print("Pinged your deployment. You successfully connected to MongoDB!")
+    except Exception as e:
+        print(e)
+
+    db2 = client["project"]
+    collection = db2["entries"]
+
+    return collection  
 
 
 
 
 def main():
     # Title and sidebar
+    cl = create_mongodb_connection()
     st.title("Airlines Management System :airplane_arriving:")
     lott1 = loti("https://lottie.host/b262eef4-f923-48e5-9df9-9654b245381d/yTaASJbbWr.json")
     lotipatient = loti("https://lottie.host/1e57917a-e376-49d2-a274-613899e76a96/OVc4BfQMSn.json")
@@ -358,7 +430,7 @@ def main():
     # create_appointments_table(db)
     # modify_patients_table(db)
 
-    menu = ["Home", "Add Flights/Schedule","Manage Passenger", "Show Available Flights","Book Flights", "Manage Bookings","System Logs"]
+    menu = ["Home", "Add Flights/Schedule","Manage Passenger", "Show Available Flights","Book Flights", "Manage Bookings","Manage Discounts","System Logs"]
     options = st.sidebar.radio("Select an Option :dart:", menu)
 
     if options == "Home":
@@ -445,6 +517,10 @@ def main():
         components.html(htmlComponents.system_logs, height=400)
         system_logs(db)
     
+    elif options == "Manage Discounts":
+        st.subheader('Manage Discounts')
+        components.html(htmlComponents.discount, height=400)
+        _discounts(cl)
 
     db.close()
 
