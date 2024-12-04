@@ -4,3 +4,4 @@ aiosqlite==0.20.0
 streamlit-lottie==0.0.5
 html2text==2024.2.26
 pymongo==4.10.1
+st_mongo_connection

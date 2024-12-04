@@ -14,6 +14,9 @@ from manage_passengers import manage_passengers
 import pymongo
 from pymongo.mongo_client import MongoClient
 import json
+import os
+import dotenv
+from st_mongo_connection import MongoDBConnection 
 
 # for my sql workbench
 # config = {
@@ -362,18 +365,18 @@ def _discounts(cl):
 
     if st.button('View Discounts'):
         viewdiscounts = json.loads(viewdiscounts)
-        v=cl.find_one(viewdiscounts)  # Read
+        v=cl.find_one({'ID':viewdiscounts})  # Read
 
-        st.success(v)
+        st.write(v)
 
-    if st.button('Update Discounts'):
-        print("updated discounts",updatediscounts, "type",type(updatediscounts))
-        updatediscounts = updatediscounts.split(",")
-        print("query:", updatediscounts[0])
-        print("update:", updatediscounts[1])
+    # if st.button('Update Discounts'):
+    #     print("updated discounts",updatediscounts, "type",type(updatediscounts))
+    #     updatediscounts = updatediscounts.split(",")
+    #     print("query:", updatediscounts[0])
+    #     print("update:", updatediscounts[1])
 
-        query = json.loads(updatediscounts[0])
-        update = json.loads(updatediscounts[1])
+    #     query = json.loads(updatediscounts[0])
+    #     update = json.loads(updatediscounts[1])
 
 
         # Perform the update operation
@@ -384,18 +387,19 @@ def _discounts(cl):
         st.success("Document Updated successfully!")
 
     if st.button('Delete Discounts'):
-        deletediscounts=json.loads(deletediscounts)
-        deleted_result = cl.delete_one(deletediscounts)
+        #deletediscounts=json.loads(deletediscounts)
+        deleted_result = cl.delete_one({'ID':viewdiscounts})
         print(deleted_result.deleted_count)  # delete
 
         st.success("Document Deleted successfully!")
     
 def create_mongodb_connection():
     """Create a connection to the MongoDB database."""
-    uri = "mongodb+srv://svb200000:dh3HxayJ4ijxcO6P@cluster0.mivp3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-
+ 
+    #connection=st.connection('mongodb',type='MongoDBConnection')
+    
     # Create a new client and connect to the server
-    client = MongoClient(uri)
+    client = MongoClient(os.getenv('uri'))
 
     # Send a ping to confirm a successful connection
     try:
@@ -414,7 +418,9 @@ def create_mongodb_connection():
 
 def main():
     # Title and sidebar
+    dotenv.load_dotenv()
     cl = create_mongodb_connection()
+    
     st.title("Airlines Management System :airplane_arriving:")
     lott1 = loti("https://lottie.host/b262eef4-f923-48e5-9df9-9654b245381d/yTaASJbbWr.json")
     lotipatient = loti("https://lottie.host/1e57917a-e376-49d2-a274-613899e76a96/OVc4BfQMSn.json")
