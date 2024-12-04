@@ -15,8 +15,8 @@ import pymongo
 from pymongo.mongo_client import MongoClient
 import json
 import os
-import dotenv
-from st_mongo_connection import MongoDBConnection 
+
+
 
 # for my sql workbench
 # config = {
