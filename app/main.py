@@ -418,7 +418,7 @@ def create_mongodb_connection():
 
 def main():
     # Title and sidebar
-    dotenv.load_dotenv()
+    
     cl = create_mongodb_connection()
     
     st.title("Airlines Management System :airplane_arriving:")
