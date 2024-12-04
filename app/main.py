@@ -397,9 +397,9 @@ def create_mongodb_connection():
     """Create a connection to the MongoDB database."""
  
     #connection=st.connection('mongodb',type='MongoDBConnection')
-    
+    uri = "mongodb+srv://svb200000:dh3HxayJ4ijxcO6P@cluster0.mivp3.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
     # Create a new client and connect to the server
-    client = MongoClient(os.getenv('uri'))
+    client = MongoClient(uri)
 
     # Send a ping to confirm a successful connection
     try:
