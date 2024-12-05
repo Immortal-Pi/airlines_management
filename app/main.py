@@ -344,14 +344,14 @@ def system_logs(db):
 
 def _discounts(cl):
     #operation=st.text_input('Operation(INSERT/DELETE/UPDATE)')
-    creatediscounts=st.text_input('Create Discounts')
-    viewdiscounts=st.text_input('View Discounts')
-    updatediscounts=st.text_input('Update Discounts')
-    deletediscounts=st.text_input('Delete Discounts')
+    creatediscounts=st.text_input('Create Discounts', placeholder='{"ID": 11, "Event": "Anniversary Sale", "Discount": {"Type": "Percentage", "Value": 35}')
+    viewdiscounts=st.number_input('View Discounts',step=1)
+    #updatediscounts=st.text_input('Update Discounts')
+    deletediscounts=st.number_input('Delete Discounts',step=1)
 
     if st.button('Create Discounts'):
         print(creatediscounts, type(creatediscounts))
-        discount = json.loads(creatediscounts)
+        
         #print(discount)  # v.s.print("user")
         print("\n")
         # insert one document
@@ -364,10 +364,10 @@ def _discounts(cl):
         st.success("Document inserted successfully!")
 
     if st.button('View Discounts'):
-        viewdiscounts = json.loads(viewdiscounts)
-        v=cl.find_one({'ID':viewdiscounts})  # Read
-
-        st.write(v)
+        
+        v=cl.find_one({"ID":viewdiscounts})  # Read
+        print(v)
+        st.table(v)
 
     # if st.button('Update Discounts'):
     #     print("updated discounts",updatediscounts, "type",type(updatediscounts))
@@ -386,9 +386,9 @@ def _discounts(cl):
 
         #st.success("Document Updated successfully!")
 
-    if st.button('Delete Discounts'):
+    if st.button('Delete Discounts') and deletediscounts :
         #deletediscounts=json.loads(deletediscounts)
-        deleted_result = cl.delete_one({'ID':viewdiscounts})
+        deleted_result = cl.delete_one({'ID':deletediscounts})
         print(deleted_result.deleted_count)  # delete
 
         st.success("Document Deleted successfully!")
@@ -402,11 +402,11 @@ def create_mongodb_connection():
     client = MongoClient(uri)
 
     # Send a ping to confirm a successful connection
-    try:
-        client.admin.command('ping')
-        print("Pinged your deployment. You successfully connected to MongoDB!")
-    except Exception as e:
-        print(e)
+    # try:
+    #     client.admin.command('ping')
+    #     print("Pinged your deployment. You successfully connected to MongoDB!")
+    # except Exception as e:
+    #     print(e)
 
     db2 = client["project"]
     collection = db2["entries"]
