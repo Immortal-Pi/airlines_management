@@ -344,10 +344,10 @@ def system_logs(db):
 
 def _discounts(cl):
     #operation=st.text_input('Operation(INSERT/DELETE/UPDATE)')
-    creatediscounts1=st.number_input('input ID for Discount', placeholder='{"ID": 11, "Event": "Anniversary Sale", "Discount": {"Type": "Percentage", "Value": 35}',step=1)
-    creatediscounts2=st.text_input('input Event', placeholder='{"Event": "Anniversary Sale", "Discount": {"Type": "Percentage", "Value": 35}')
-    creatediscounts3=st.text_input('input Discount', placeholder='{ "Discount": {"Type": "Percentage", "Value": 35}')
-    creatediscounts4=st.number_input('input Value for Discount', placeholder='{"Value": 35}',step=1)
+    creatediscounts1=st.number_input('input ID for Discount', placeholder='{"ID": 11}',step=1)
+    creatediscounts2=st.text_input('input Event', placeholder='{"Event": "Anniversary Sale/Black Friday/Cristmas"}')
+    creatediscounts3=st.text_input('input Discount', placeholder='{ "Discount": {"Type": "Percentage"}')
+    creatediscounts4=st.number_input('input Value for Discount', placeholder='{"Value": 35%/50%}',step=1)
 
     doc_id = st.number_input("Enter the ID of the document to be updated", step=1)  # Numeric input for ID
     update_field = st.text_input("Enter the field name to be updated or added")  # Field to update
