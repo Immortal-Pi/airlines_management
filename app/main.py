@@ -344,18 +344,44 @@ def system_logs(db):
 
 def _discounts(cl):
     #operation=st.text_input('Operation(INSERT/DELETE/UPDATE)')
-    creatediscounts=st.text_input('Create Discounts', placeholder='{"ID": 11, "Event": "Anniversary Sale", "Discount": {"Type": "Percentage", "Value": 35}')
+    creatediscounts1=st.number_input('input ID for Discount', placeholder='{"ID": 11, "Event": "Anniversary Sale", "Discount": {"Type": "Percentage", "Value": 35}',step=1)
+    creatediscounts2=st.text_input('input Event', placeholder='{"Event": "Anniversary Sale", "Discount": {"Type": "Percentage", "Value": 35}')
+    creatediscounts3=st.text_input('input Discount', placeholder='{ "Discount": {"Type": "Percentage", "Value": 35}')
+    creatediscounts4=st.number_input('input Value for Discount', placeholder='{"Value": 35}',step=1)
+
+    doc_id = st.number_input("Enter the ID of the document to be updated", step=1)  # Numeric input for ID
+    update_field = st.text_input("Enter the field name to be updated or added")  # Field to update
+    update_value = st.text_input("Enter the value for the field")  # Value for the update
+
     viewdiscounts=st.number_input('View Discounts',step=1)
     #updatediscounts=st.text_input('Update Discounts')
     deletediscounts=st.number_input('Delete Discounts',step=1)
 
     if st.button('Create Discounts'):
+
+
+        print('createdisciunts1',creatediscounts1  ,type(creatediscounts1))
+        print('createdisciunts2', creatediscounts2 ,type(creatediscounts2))
+        print('createdisciunts3', creatediscounts3 ,type(creatediscounts3))
+        print('createdisciunts4', creatediscounts4 ,type(creatediscounts4))
+
+        creatediscounts = {
+            "ID": int(creatediscounts1) if creatediscounts1 else None,
+            "Event": creatediscounts2.strip() if creatediscounts2 else None,
+            "Discount": {
+                "Type": creatediscounts3.strip() if creatediscounts3 else None,
+                "Value": int(creatediscounts4) if creatediscounts4 else None
+            }
+        }
+        print('createdisciunts', creatediscounts, type(creatediscounts))
+        #creatediscounts = ' "{" + "ID" + ":"' + int(creatediscounts1) + "," + "Event" + ":" + creatediscounts2 + "," + + creatediscounts3
+
         print(creatediscounts, type(creatediscounts))
         
         #print(discount)  # v.s.print("user")
         print("\n")
         # insert one document
-        inserted_record = cl.insert_one(discount)
+        inserted_record = cl.insert_one(creatediscounts)
         print(f"Inserted record ID: {inserted_record.inserted_id}")
 
         #column_names = ['LogID', 'OPERATION', 'LogTimeStamp', 'DATA']
@@ -369,20 +395,23 @@ def _discounts(cl):
         print(v)
         st.table(v)
 
-    # if st.button('Update Discounts'):
-    #     print("updated discounts",updatediscounts, "type",type(updatediscounts))
-    #     updatediscounts = updatediscounts.split(",")
-    #     print("query:", updatediscounts[0])
-    #     print("update:", updatediscounts[1])
+    if st.button('Update Discounts'):
 
-    #     query = json.loads(updatediscounts[0])
-    #     update = json.loads(updatediscounts[1])
+        try:
+            # Check if the document exists
+            document = cl.find_one({"ID": doc_id})
 
-
-        # Perform the update operation
-        #cl.update_one(query, update)
-        #updatediscounts=json.loads(query,update)
-        #cl.update_one(updatediscounts)  # update
+            if document:
+                # Update the field
+                cl.update_one(
+                    {"ID": doc_id},  # Match by ID
+                    {"$set": {update_field: update_value}}  # Update or add the field
+                )
+                st.success(f"Document with ID {doc_id} updated successfully.")
+            else:
+                st.warning(f"No document found with ID {doc_id}.")
+        except Exception as e:
+            st.error(f"An error occurred: {e}")
 
         #st.success("Document Updated successfully!")
 
