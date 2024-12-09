@@ -73,7 +73,7 @@ This project was developed as part of a Database Foundation Course to create an 
 ## Tech Stack
 
 **Python**
-[python]('https://www.python.org/')
+[python](https://www.python.org/)
 
 **Streamlit** 
 [streamlit](https://streamlit.io/)
