@@ -57,7 +57,7 @@ def fetch_passenger_by_id(db,passenger_id):
 
 def manage_passengers(db):
     
-    passenger_id=st.number_input('Enter Passenger ID',step=1, value=10) 
+    passenger_id=st.number_input('Enter Passenger ID',step=1, value=101) 
     if st.button('Search'):
         passenger=fetch_passenger_by_id(db,passenger_id)
         #st.write(passenger)
