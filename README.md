@@ -7,10 +7,10 @@ The application incorporates dynamic logging, enabling audit trails for key oper
 
 ## Demo
 
-![Video Demo](https://youtu.be/yS9B4N_-r0o)
+![Video Demo](https://youtu.be/yS9B4N_-r0o?list=PLO2_R-9GUG4Tgah1jcwvTai-EibgYZQPJ)
 ## Architecture
 
-![App Screenshot](https://github.com/Immortal-Pi/doc_chat_bot/blob/main/resources/1.png)
+![App Screenshot](https://github.com/Immortal-Pi/airlines_management/blob/main/assets/Network%20diagram%20example.jpeg)
 
 ## Features
 
@@ -52,14 +52,19 @@ This project was developed as part of a Database Foundation Course to create an 
 
 
 ## Screenshot
+![App Screenshot](https://github.com/Immortal-Pi/airlines_management/blob/main/assets/appScreenshots/homepage.png)
 
-![App Screenshot](https://github.com/Immortal-Pi/doc_chat_bot/blob/main/resources/1.png)
+![App Screenshot](https://github.com/Immortal-Pi/airlines_management/blob/main/assets/appScreenshots/add_flights.png)
 
-![App Screenshot](https://github.com/Immortal-Pi/doc_chat_bot/blob/main/resources/2.png)
+![App Screenshot](https://github.com/Immortal-Pi/airlines_management/blob/main/assets/appScreenshots/book_flights.png)
 
-![App Screenshot](https://github.com/Immortal-Pi/doc_chat_bot/blob/main/resources/3.png)
+![App Screenshot](https://github.com/Immortal-Pi/airlines_management/blob/main/assets/appScreenshots/discounts.png)
 
-![App Screenshot](https://github.com/Immortal-Pi/doc_chat_bot/blob/main/resources/4.png)
+![App Screenshot](https://github.com/Immortal-Pi/airlines_management/blob/main/assets/appScreenshots/logs.png)
+
+![App Screenshot](https://github.com/Immortal-Pi/airlines_management/blob/main/assets/appScreenshots/passengers.png)
+
+![App Screenshot](https://github.com/Immortal-Pi/airlines_management/blob/main/assets/appScreenshots/search_flights.png)
 
 
 ## Tech Stack
