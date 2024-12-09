@@ -7,6 +7,8 @@ The application incorporates dynamic logging, enabling audit trails for key oper
 
 ## Demo
 ![Work](https://github.com/Immortal-Pi/airlines_management/blob/main/assets/appScreenshots/demo.gif)
+
+## Video Demo
 [Video Demo](https://youtu.be/yS9B4N_-r0o?list=PLO2_R-9GUG4Tgah1jcwvTai-EibgYZQPJ)
 
 ## Architecture
